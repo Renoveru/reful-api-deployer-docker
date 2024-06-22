@@ -1,30 +1,14 @@
-FROM sikmi/awseb-deployer-docker
+FROM ghcr.io/renoveru/awseb-deployer-docker
+FROM node:18.19.0
+FROM ruby:3.3.0
 
-# ruby install
-RUN curl -O http://ftp.ruby-lang.org/pub/ruby/2.5/ruby-2.5.1.tar.gz && \
-    tar -zxvf ruby-2.5.1.tar.gz && \
-    cd ruby-2.5.1 && \
-    ./configure --disable-install-doc && \
-    make && \
-    make install && \
-    cd .. && \
-    rm -r ruby-2.5.1 ruby-2.5.1.tar.gz
+LABEL org.opencontainers.image.source https://github.com/Renoveru/reful-api-deployer-docker
 
-# node install
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install nodejs
+COPY --from=node:18.19.0 /usr/local /usr/local
 
 # yarn install
-RUN mkdir -p /var/lib/apt/lists \
-    && apt-get update \
-    && apt-get install -y apt-transport-https git --no-install-recommends \
-    && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-    && apt-get update && apt-get -y install yarn \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean \
-    && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
+RUN if command -v yarn > /dev/null; then npm uninstall -g yarn; fi
+RUN npm install -g yarn --force
 
 RUN gem install bundler
 # firebase install
